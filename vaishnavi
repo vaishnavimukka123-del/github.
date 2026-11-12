@@ -1,0 +1,117 @@
+
+# A. Reading Data from Pickle Files
+
+import pickle
+import pandas as pd
+from PIL import Image, ImageDraw
+import matplotlib.pyplot as plt
+import glob
+import sqlite3
+
+data = {
+    "Name": ["Rahul", "Priya", "Suresh"],
+    "Marks": [85, 92, 78]
+}
+
+with open("sample.pkl", "wb") as file:
+    pickle.dump(data, file)
+
+with open("sample.pkl", "rb") as file:
+    result = pickle.load(file)
+
+print("Pickle File Data:")
+print(result)
+
+
+# B. Reading Image Files Using PIL
+
+img = Image.new("RGB", (400, 250), color="lightblue")
+
+draw = ImageDraw.Draw(img)
+
+# Draw triangle
+draw.polygon(
+    [(200, 30), (120, 150), (280, 150)],
+    fill="orange",
+    outline="white"
+)
+
+# Draw star
+draw.regular_polygon(
+    (200, 190, 45),
+    n_sides=5,
+    rotation=0,
+    fill="red",
+    outline="yellow"
+)
+
+draw.text((145, 225), "PIL Image", fill="black")
+
+img.save("sample.jpg")
+
+image = Image.open("sample.jpg")
+
+print("\nImage Format:", image.format)
+print("Image Size:", image.size)
+print("Image Mode:", image.mode)
+
+plt.imshow(image)
+plt.axis("off")
+plt.show()
+
+
+# C. Reading Multiple Files Using Glob
+
+data1 = {
+    "Name": ["Rahul", "Priya"],
+    "Marks": [85, 92]
+}
+
+data2 = {
+    "Name": ["Suresh", "Divya"],
+    "Marks": [78, 89]
+}
+
+pd.DataFrame(data1).to_csv("students1.csv", index=False)
+pd.DataFrame(data2).to_csv("students2.csv", index=False)
+
+files = glob.glob("*.csv")
+
+for file in files:
+    print("\nFile Name:", file)
+    df = pd.read_csv(file)
+    print(df)
+
+
+# D. Importing Data from Database
+
+conn = sqlite3.connect("college.db")
+cursor = conn.cursor()
+
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS Student (
+    ID INTEGER,
+    Name TEXT,
+    Marks INTEGER
+)
+""")
+
+cursor.execute("DELETE FROM Student")
+
+cursor.executemany(
+    "INSERT INTO Student VALUES (?, ?, ?)",
+    [
+        (1, "Rahul", 85),
+        (2, "Priya", 92),
+        (3, "Suresh", 78)
+    ]
+)
+
+conn.commit()
+
+df = pd.read_sql_query("SELECT * FROM Student", conn)
+
+print("\nDatabase Records:")
+print(df)
+
+conn.close()
